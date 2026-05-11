@@ -2,6 +2,8 @@
 
 A small shared inventory app for antique toys and finds.
 
+Items can include a compressed photo. On mobile and tablet browsers, the `Add Image` button opens the device's native camera/photo-library picker. Photos are stored with the item data in `data/items.json`, so they sync through the same GitHub save path when GitHub sync is enabled.
+
 ## Local Use
 
 ```powershell

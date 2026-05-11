@@ -94,6 +94,18 @@
             <textarea id="notes" name="notes" rows="4" placeholder="Original paint, missing key, provenance, repair notes"></textarea>
           </label>
 
+          <section class="image-picker" aria-label="Item image">
+            <input id="imageData" type="hidden">
+            <input class="hidden" id="imageInput" type="file" accept="image/*">
+            <div class="image-preview" id="imagePreview">
+              <span>No image selected</span>
+            </div>
+            <div class="image-actions">
+              <button class="secondary" id="addImageBtn" type="button">Add Image</button>
+              <button class="ghost hidden" id="removeImageBtn" type="button">Remove Image</button>
+            </div>
+          </section>
+
           <button class="primary wide" id="saveBtn" type="submit">Add Item</button>
         </form>
       </section>
@@ -133,6 +145,7 @@
           <table>
             <thead>
               <tr>
+                <th>Photo</th>
                 <th>Item</th>
                 <th>Origin</th>
                 <th>Condition</th>
@@ -160,6 +173,7 @@
       <table class="report-table">
         <thead>
           <tr>
+            <th>Photo</th>
             <th>Item</th>
             <th>Maker</th>
             <th>Origin</th>
@@ -172,6 +186,14 @@
         <tbody id="reportBody"></tbody>
       </table>
     </section>
+
+    <div class="image-modal hidden" id="imageModal" role="dialog" aria-modal="true" aria-label="Item image preview">
+      <div class="image-modal-panel">
+        <button class="modal-close" id="closeImageModal" type="button" aria-label="Close image preview">Close</button>
+        <img id="modalImage" alt="">
+        <p id="modalCaption"></p>
+      </div>
+    </div>
 
     <script src="app.js"></script>
   </body>

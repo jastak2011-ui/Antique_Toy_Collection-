@@ -134,7 +134,7 @@ const server = http.createServer((req, res) => {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
-      if (body.length > 2_000_000) req.destroy();
+      if (body.length > 15_000_000) req.destroy();
     });
     req.on("end", async () => {
       try {

@@ -12,6 +12,15 @@ const reportBody = document.querySelector("#reportBody");
 const reportStats = document.querySelector("#reportStats");
 const reportDate = document.querySelector("#reportDate");
 const saveStatus = document.querySelector("#saveStatus");
+const imageData = document.querySelector("#imageData");
+const imageInput = document.querySelector("#imageInput");
+const imagePreview = document.querySelector("#imagePreview");
+const addImageBtn = document.querySelector("#addImageBtn");
+const removeImageBtn = document.querySelector("#removeImageBtn");
+const imageModal = document.querySelector("#imageModal");
+const modalImage = document.querySelector("#modalImage");
+const modalCaption = document.querySelector("#modalCaption");
+const closeImageModal = document.querySelector("#closeImageModal");
 
 let items = [];
 
@@ -26,8 +35,10 @@ const fields = [
   "condition",
   "acquiredDate",
   "source",
-  "notes"
+  "notes",
+  "imageData"
 ];
+const searchableFields = fields.filter((field) => field !== "imageData");
 
 function loadLocalItems() {
   try {
@@ -132,6 +143,59 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function safeImageData(value) {
+  const text = String(value || "");
+  if (/^data:image\/(jpeg|jpg|png|webp|gif);base64,[a-z0-9+/=]+$/i.test(text)) return text;
+  return "";
+}
+
+function renderFormImage() {
+  const src = safeImageData(imageData.value);
+  if (!src) {
+    imagePreview.innerHTML = "<span>No image selected</span>";
+    addImageBtn.textContent = "Add Image";
+    removeImageBtn.classList.add("hidden");
+    return;
+  }
+
+  imagePreview.innerHTML = `<img src="${src}" alt="Selected item image">`;
+  addImageBtn.textContent = "Change Image";
+  removeImageBtn.classList.remove("hidden");
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function resizeImage(file) {
+  const source = await readFileAsDataUrl(file);
+  const image = await loadImage(source);
+  const maxSide = 900;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const width = Math.round(image.width * scale);
+  const height = Math.round(image.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.78);
+}
+
 function getTotals(sourceItems = items) {
   return sourceItems.reduce(
     (totals, item) => {
@@ -144,7 +208,7 @@ function getTotals(sourceItems = items) {
 }
 
 function searchableText(item) {
-  return fields.map((field) => item[field]).join(" ").toLowerCase();
+  return searchableFields.map((field) => item[field]).join(" ").toLowerCase();
 }
 
 function filteredItems() {
@@ -167,8 +231,17 @@ function renderInventory() {
 
   inventoryBody.innerHTML = visibleItems
     .map(
-      (item) => `
+      (item) => {
+        const src = safeImageData(item.imageData);
+        return `
         <tr>
+          <td>
+            ${
+              src
+                ? `<button class="thumb-button" type="button" title="View image" data-action="view-image" data-id="${item.id}"><img src="${src}" alt="${escapeHtml(item.itemName)}"></button>`
+                : `<span class="thumb-button">No Photo</span>`
+            }
+          </td>
           <td>
             <span class="item-title">${escapeHtml(item.itemName)}</span>
             <span class="item-meta">${escapeHtml([item.maker, item.era, item.category].filter(Boolean).join(" / "))}</span>
@@ -184,7 +257,8 @@ function renderInventory() {
             </div>
           </td>
         </tr>
-      `
+      `;
+      }
     )
     .join("");
 
@@ -210,8 +284,11 @@ function renderReport() {
 
   reportBody.innerHTML = items
     .map(
-      (item) => `
+      (item) => {
+        const src = safeImageData(item.imageData);
+        return `
         <tr>
+          <td>${src ? `<img class="report-thumb" src="${src}" alt="">` : ""}</td>
           <td>${escapeHtml(item.itemName)}</td>
           <td>${escapeHtml(item.maker)}</td>
           <td>${escapeHtml(item.origin)}</td>
@@ -220,7 +297,8 @@ function renderReport() {
           <td>${exactMoney(item.pricePaid)}</td>
           <td>${exactMoney(item.estimatedValue)}</td>
         </tr>
-      `
+      `;
+      }
     )
     .join("");
 }
@@ -232,6 +310,9 @@ function resetForm() {
   saveBtn.textContent = "Add Item";
   cancelEditBtn.classList.add("hidden");
   document.querySelector("#condition").value = "Excellent";
+  imageData.value = "";
+  imageInput.value = "";
+  renderFormImage();
 }
 
 function readFormItem() {
@@ -257,7 +338,24 @@ function editItem(id) {
   formTitle.textContent = "Edit Find";
   saveBtn.textContent = "Save Changes";
   cancelEditBtn.classList.remove("hidden");
+  renderFormImage();
   document.querySelector("#itemName").focus();
+}
+
+function openImageModal(id) {
+  const item = items.find((entry) => entry.id === id);
+  const src = item ? safeImageData(item.imageData) : "";
+  if (!item || !src) return;
+  modalImage.src = src;
+  modalImage.alt = item.itemName || "Item image";
+  modalCaption.textContent = item.itemName || "Item image";
+  imageModal.classList.remove("hidden");
+}
+
+function closeModal() {
+  imageModal.classList.add("hidden");
+  modalImage.src = "";
+  modalCaption.textContent = "";
 }
 
 async function deleteItem(id) {
@@ -309,10 +407,44 @@ inventoryBody.addEventListener("click", (event) => {
   const { action, id } = button.dataset;
   if (action === "edit") editItem(id);
   if (action === "delete") deleteItem(id);
+  if (action === "view-image") openImageModal(id);
 });
 
 searchInput.addEventListener("input", renderInventory);
 cancelEditBtn.addEventListener("click", resetForm);
+addImageBtn.addEventListener("click", () => imageInput.click());
+removeImageBtn.addEventListener("click", () => {
+  imageData.value = "";
+  imageInput.value = "";
+  renderFormImage();
+});
+imageInput.addEventListener("change", async () => {
+  const file = imageInput.files && imageInput.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    setSaveStatus("Please choose an image file", "error");
+    return;
+  }
+
+  addImageBtn.disabled = true;
+  setSaveStatus("Preparing image...", "");
+  try {
+    imageData.value = await resizeImage(file);
+    renderFormImage();
+    setSaveStatus("Image ready", "ok");
+  } catch {
+    setSaveStatus("Could not read image", "error");
+  } finally {
+    addImageBtn.disabled = false;
+  }
+});
+closeImageModal.addEventListener("click", closeModal);
+imageModal.addEventListener("click", (event) => {
+  if (event.target === imageModal) closeModal();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !imageModal.classList.contains("hidden")) closeModal();
+});
 document.querySelector("#printReportBtn").addEventListener("click", () => {
   renderReport();
   window.print();
