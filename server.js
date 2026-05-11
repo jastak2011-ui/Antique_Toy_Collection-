@@ -4,7 +4,7 @@ const path = require("path");
 
 const root = __dirname;
 const port = Number(process.env.PORT) || 4173;
-const host = process.env.HOST || "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
 const dataDir = path.join(root, "data");
 const dataFile = path.join(dataDir, "items.json");
 const githubConfig = {
