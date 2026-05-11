@@ -11,8 +11,9 @@ const emptyState = document.querySelector("#emptyState");
 const reportBody = document.querySelector("#reportBody");
 const reportStats = document.querySelector("#reportStats");
 const reportDate = document.querySelector("#reportDate");
+const saveStatus = document.querySelector("#saveStatus");
 
-let items = loadItems();
+let items = [];
 
 const fields = [
   "itemName",
@@ -28,7 +29,7 @@ const fields = [
   "notes"
 ];
 
-function loadItems() {
+function loadLocalItems() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
   } catch {
@@ -36,8 +37,75 @@ function loadItems() {
   }
 }
 
-function saveItems() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+function saveLocalItems() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // The server-backed save still protects data when browser storage is blocked.
+  }
+}
+
+function setSaveStatus(message, state = "") {
+  saveStatus.textContent = message;
+  if (state) {
+    saveStatus.dataset.state = state;
+  } else {
+    delete saveStatus.dataset.state;
+  }
+}
+
+async function loadItems() {
+  const localItems = loadLocalItems();
+
+  try {
+    const response = await fetch("/api/items", { cache: "no-store" });
+    if (!response.ok) throw new Error("Item API unavailable");
+    const serverItems = await response.json();
+    if (Array.isArray(serverItems) && serverItems.length > 0) {
+      items = serverItems;
+      saveLocalItems();
+      setSaveStatus("Loaded from server", "ok");
+      return;
+    }
+  } catch {
+    // Opening index.html directly still works with browser storage.
+  }
+
+  items = localItems;
+  if (items.length > 0) await saveItems();
+  if (items.length === 0) setSaveStatus("Ready");
+}
+
+async function saveItems() {
+  saveLocalItems();
+
+  try {
+    setSaveStatus("Saving...", "");
+    const response = await fetch("/api/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(items)
+    });
+
+    if (!response.ok) throw new Error("Item API unavailable");
+    const result = await response.json();
+    if (result.github && result.github.enabled && result.github.error) {
+      setSaveStatus("Saved locally; GitHub sync failed", "warn");
+      return result;
+    }
+
+    if (result.github && result.github.enabled) {
+      setSaveStatus("Saved to GitHub", "ok");
+      return result;
+    }
+
+    setSaveStatus("Saved locally", "ok");
+    return result;
+  } catch {
+    // Browser-only mode cannot write to disk, so localStorage remains the fallback.
+    setSaveStatus("Saved in this browser only", "warn");
+    return { ok: true, localOnly: true };
+  }
 }
 
 function money(value) {
@@ -167,11 +235,16 @@ function resetForm() {
 }
 
 function readFormItem() {
-  const item = { id: itemId.value || crypto.randomUUID(), updatedAt: new Date().toISOString() };
+  const item = { id: itemId.value || createId(), updatedAt: new Date().toISOString() };
   fields.forEach((field) => {
     item[field] = document.querySelector(`#${field}`).value.trim();
   });
   return item;
+}
+
+function createId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function editItem(id) {
@@ -187,13 +260,13 @@ function editItem(id) {
   document.querySelector("#itemName").focus();
 }
 
-function deleteItem(id) {
+async function deleteItem(id) {
   const item = items.find((entry) => entry.id === id);
   if (!item) return;
   const confirmed = confirm(`Delete "${item.itemName}" from your ledger?`);
   if (!confirmed) return;
   items = items.filter((entry) => entry.id !== id);
-  saveItems();
+  await saveItems();
   renderInventory();
   resetForm();
 }
@@ -214,7 +287,7 @@ function exportCsv() {
   URL.revokeObjectURL(url);
 }
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const nextItem = readFormItem();
   const existingIndex = items.findIndex((entry) => entry.id === nextItem.id);
@@ -225,7 +298,7 @@ form.addEventListener("submit", (event) => {
     items.unshift(nextItem);
   }
 
-  saveItems();
+  await saveItems();
   renderInventory();
   resetForm();
 });
@@ -246,5 +319,10 @@ document.querySelector("#printReportBtn").addEventListener("click", () => {
 });
 document.querySelector("#exportCsvBtn").addEventListener("click", exportCsv);
 
-resetForm();
-renderInventory();
+async function init() {
+  await loadItems();
+  resetForm();
+  renderInventory();
+}
+
+init();

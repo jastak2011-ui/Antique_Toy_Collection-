@@ -89,6 +89,25 @@ h2 {
   gap: 12px;
 }
 
+.save-status {
+  color: var(--muted);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.save-status[data-state="ok"] {
+  color: var(--green);
+}
+
+.save-status[data-state="warn"] {
+  color: var(--gold);
+}
+
+.save-status[data-state="error"] {
+  color: var(--red);
+}
+
 .app-layout {
   display: grid;
   grid-template-columns: minmax(300px, 420px) 1fr;
