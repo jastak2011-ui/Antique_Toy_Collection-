@@ -1,5 +1,20 @@
 [
   {
+    "id": "452500c2-ecb3-448b-877e-e516bf7fa8f3",
+    "updatedAt": "2026-05-11T13:42:38.615Z",
+    "itemName": "Doll",
+    "maker": "Lehmann",
+    "origin": "Japan",
+    "era": "1950",
+    "category": "Tin",
+    "pricePaid": "4.50",
+    "estimatedValue": "100",
+    "condition": "Excellent",
+    "acquiredDate": "2026-05-08",
+    "source": "Antique mall",
+    "notes": "Missing pipe"
+  },
+  {
     "id": "7a4300b9-492e-4469-afd4-5a570af196f8",
     "updatedAt": "2026-05-11T13:36:56.058Z",
     "itemName": "tin wind up car",
