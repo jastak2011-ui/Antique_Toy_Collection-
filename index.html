@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Antique Toy Ledger</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Collection Inventory</p>
+        <h1>Antique Toy Ledger</h1>
+      </div>
+      <div class="header-actions">
+        <button class="secondary" id="exportCsvBtn" type="button" title="Export CSV">CSV</button>
+        <button class="primary" id="printReportBtn" type="button" title="Generate PDF report">Generate PDF</button>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="entry-panel" aria-labelledby="formTitle">
+        <div class="panel-heading">
+          <h2 id="formTitle">Add a Find</h2>
+          <button class="ghost hidden" id="cancelEditBtn" type="button">Cancel Edit</button>
+        </div>
+
+        <form id="itemForm" autocomplete="off">
+          <input id="itemId" type="hidden">
+
+          <label>
+            Item
+            <input id="itemName" name="itemName" type="text" placeholder="Tin wind-up car" required>
+          </label>
+
+          <div class="field-grid">
+            <label>
+              Maker / Brand
+              <input id="maker" name="maker" type="text" placeholder="Lehmann">
+            </label>
+            <label>
+              Country of Origin
+              <input id="origin" name="origin" type="text" placeholder="Germany">
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              Year / Era
+              <input id="era" name="era" type="text" placeholder="1930s">
+            </label>
+            <label>
+              Category
+              <input id="category" name="category" type="text" placeholder="Pressed steel">
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              Price Paid
+              <input id="pricePaid" name="pricePaid" type="number" min="0" step="0.01" placeholder="125.00">
+            </label>
+            <label>
+              Estimated Value
+              <input id="estimatedValue" name="estimatedValue" type="number" min="0" step="0.01" placeholder="210.00">
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              Condition
+              <select id="condition" name="condition">
+                <option>Excellent</option>
+                <option>Very Good</option>
+                <option>Good</option>
+                <option>Fair</option>
+                <option>Needs Repair</option>
+              </select>
+            </label>
+            <label>
+              Acquisition Date
+              <input id="acquiredDate" name="acquiredDate" type="date">
+            </label>
+          </div>
+
+          <label>
+            Source / Location Found
+            <input id="source" name="source" type="text" placeholder="Estate sale, Brimfield, auction lot">
+          </label>
+
+          <label>
+            Notes
+            <textarea id="notes" name="notes" rows="4" placeholder="Original paint, missing key, provenance, repair notes"></textarea>
+          </label>
+
+          <button class="primary wide" id="saveBtn" type="submit">Add Item</button>
+        </form>
+      </section>
+
+      <section class="inventory-panel" aria-labelledby="inventoryTitle">
+        <div class="toolbar">
+          <div>
+            <p class="eyebrow">Master List</p>
+            <h2 id="inventoryTitle">Inventory</h2>
+          </div>
+          <label class="search-label">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Name, maker, country, condition">
+          </label>
+        </div>
+
+        <div class="stats-grid" aria-label="Collection summary">
+          <div>
+            <span>Total Items</span>
+            <strong id="totalItems">0</strong>
+          </div>
+          <div>
+            <span>Total Paid</span>
+            <strong id="totalPaid">$0</strong>
+          </div>
+          <div>
+            <span>Est. Value</span>
+            <strong id="totalValue">$0</strong>
+          </div>
+          <div>
+            <span>Appreciation</span>
+            <strong id="totalGain">$0</strong>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Origin</th>
+                <th>Condition</th>
+                <th>Paid</th>
+                <th>Value</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+          <p class="empty-state" id="emptyState">Add your first find to start the ledger.</p>
+        </div>
+      </section>
+    </main>
+
+    <section class="report-sheet" id="reportSheet" aria-label="Printable collection report">
+      <div class="report-header">
+        <div>
+          <p class="eyebrow">PDF Report</p>
+          <h2>Antique Toy Collection Summary</h2>
+        </div>
+        <p id="reportDate"></p>
+      </div>
+      <div class="report-stats" id="reportStats"></div>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Maker</th>
+            <th>Origin</th>
+            <th>Era</th>
+            <th>Condition</th>
+            <th>Paid</th>
+            <th>Est. Value</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody"></tbody>
+      </table>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
