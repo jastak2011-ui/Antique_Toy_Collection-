@@ -29,20 +29,5 @@
     "acquiredDate": "2026-02-03",
     "source": "test",
     "notes": "test"
-  },
-  {
-    "id": "452500c2-ecb3-448b-877e-e516bf7fa8f3",
-    "updatedAt": "2026-05-11T13:42:38.615Z",
-    "itemName": "Doll",
-    "maker": "Lehmann",
-    "origin": "Japan",
-    "era": "1950",
-    "category": "Tin",
-    "pricePaid": "4.50",
-    "estimatedValue": "100",
-    "condition": "Excellent",
-    "acquiredDate": "2026-05-08",
-    "source": "Antique mall",
-    "notes": "Missing pipe"
   }
 ]
