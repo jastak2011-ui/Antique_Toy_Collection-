@@ -44,20 +44,5 @@
     "acquiredDate": "2026-05-08",
     "source": "Antique mall",
     "notes": "Missing pipe"
-  },
-  {
-    "id": "7a4300b9-492e-4469-afd4-5a570af196f8",
-    "updatedAt": "2026-05-11T13:36:56.058Z",
-    "itemName": "tin wind up car",
-    "maker": "Lehmann",
-    "origin": "Germany",
-    "era": "1930s",
-    "category": "pressed steel",
-    "pricePaid": "125",
-    "estimatedValue": "210",
-    "condition": "Excellent",
-    "acquiredDate": "2025-11-04",
-    "source": "estate sale",
-    "notes": "original paint"
   }
 ]
